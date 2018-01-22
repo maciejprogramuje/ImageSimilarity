@@ -3,6 +3,7 @@ package com.maciejprogramuje.facebook.imagesimilarity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +28,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -46,8 +51,13 @@ public class MainActivity extends AppCompatActivity {
         Bitmap flower1 = getBitmapFromUrl(FLOWER_1);
         Bitmap flower2 = getBitmapFromUrl(FLOWER_2);
 
+        byte[] imageAsBytes = bitmapToByteArray(flower1);
+        Bitmap b = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+        Bitmap newB = Bitmap.createScaledBitmap(b, 120, 120, false);
+
+
         flower1ImageView.setImageBitmap(flower1);
-        flower2ImageView.setImageBitmap(flower2);
+        flower2ImageView.setImageBitmap(newB);
     }
 
     @Override
