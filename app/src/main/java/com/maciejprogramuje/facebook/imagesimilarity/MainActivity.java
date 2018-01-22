@@ -6,16 +6,16 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView flower1ImageView;
     private ImageView flower2ImageView;
+    private EditText toleranceEditText;
+    private TextView resultTextView;
+
+    private double toleranceByUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,23 +44,31 @@ public class MainActivity extends AppCompatActivity {
 
         flower1ImageView = findViewById(R.id.flower_1_image_view);
         flower2ImageView = findViewById(R.id.flower_2_image_view);
+        toleranceEditText = findViewById(R.id.tolerance_edit_text);
+        resultTextView = findViewById(R.id.result_text_view);
+
+        toleranceByUser = 25;
 
         final Bitmap flower1 = getBitmapFromUrl(FLOWER_1);
         final Bitmap flower2 = getBitmapFromUrl(FLOWER_2);
 
         flower1ImageView.setImageBitmap(flower1);
         flower2ImageView.setImageBitmap(flower2);
+        toleranceEditText.setText(String.valueOf(toleranceByUser));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // tolerance=0 - pictures exactly the same
-                // tolerance=100 - pictures totally different, but scripts says that they are the same
-                bitmapsSimilarity(flower1, flower2, 25);
+                // toleranceByUser=0 - pictures exactly the same
+                // toleranceByUser=100 - pictures totally different, but method says that they are the same
 
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
+                toleranceByUser = Double.valueOf(toleranceEditText.getText().toString());
+                if(bitmapsSimilarity(flower1, flower2, toleranceByUser)) {
+                    resultTextView.setText("Pictures are silimar!");
+                } else {
+                    resultTextView.setText("Pictures are different!");
+                }
             }
         });
     }
@@ -95,9 +107,9 @@ public class MainActivity extends AppCompatActivity {
         return bitMap;
     }
 
-    private void bitmapsSimilarity(Bitmap secondBitmap, Bitmap firstBitmap, double tolerance) {
-        Bitmap scaledSecondBitmap = Bitmap.createScaledBitmap(secondBitmap, 32, 32, true);
-        Bitmap scaledFirstBitmap = Bitmap.createScaledBitmap(firstBitmap, 32, 32, true);
+    private boolean bitmapsSimilarity(Bitmap secondBitmap, Bitmap firstBitmap, double tolerance) {
+        Bitmap scaledSecondBitmap = Bitmap.createScaledBitmap(secondBitmap, 32, 32, false);
+        Bitmap scaledFirstBitmap = Bitmap.createScaledBitmap(firstBitmap, 32, 32, false);
 
         int cumulatedColorDistance = 0;
 
@@ -120,8 +132,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (difference > tolerance) {
             Log.w("UWAGA", "Pictures are different! (Difference " + difference + "% > " + tolerance + "%)");
+            return false;
         } else {
             Log.w("UWAGA", "Pictures are silimar! (Difference " + difference + "% < " + tolerance + "%)");
+            return true;
         }
     }
 }
