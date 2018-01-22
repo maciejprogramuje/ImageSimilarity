@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,6 +20,9 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
     public static final String FLOWER_1 = "https://static.pexels.com/photos/37349/rose-beautiful-beauty-bloom.jpg";
     public static final String FLOWER_2 = "http://sanctum-inle-resort.com/wp-content/uploads/2015/11/Sanctum_Inle_Resort_Myanmar_Flower_Macro_Cherry_Blossom.jpg";
+
+    private ImageView flower1ImageView;
+    private ImageView flower2ImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +40,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        flower1ImageView = findViewById(R.id.flower_1_image_view);
+        flower2ImageView = findViewById(R.id.flower_2_image_view);
+
         Bitmap flower1 = getBitmapFromUrl(FLOWER_1);
         Bitmap flower2 = getBitmapFromUrl(FLOWER_2);
+
+        flower1ImageView.setImageBitmap(flower1);
+        flower2ImageView.setImageBitmap(flower2);
     }
 
     @Override
