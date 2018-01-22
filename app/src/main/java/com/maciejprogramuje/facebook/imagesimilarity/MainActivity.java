@@ -2,15 +2,17 @@ package com.maciejprogramuje.facebook.imagesimilarity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
@@ -36,28 +38,27 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        flower1ImageView = findViewById(R.id.flower_1_image_view);
+        flower2ImageView = findViewById(R.id.flower_2_image_view);
+
+        final Bitmap flower1 = getBitmapFromUrl(FLOWER_1);
+        final Bitmap flower2 = getBitmapFromUrl(FLOWER_2);
+
+        flower1ImageView.setImageBitmap(flower1);
+        flower2ImageView.setImageBitmap(flower2);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                // tolerance=0 - pictures exactly the same
+                // tolerance=100 - pictures totally different, but scripts says that they are the same
+                bitmapsSimilarity(flower1, flower2, 25);
+
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
         });
-
-        flower1ImageView = findViewById(R.id.flower_1_image_view);
-        flower2ImageView = findViewById(R.id.flower_2_image_view);
-
-        Bitmap flower1 = getBitmapFromUrl(FLOWER_1);
-        Bitmap flower2 = getBitmapFromUrl(FLOWER_2);
-
-        byte[] imageAsBytes = bitmapToByteArray(flower1);
-        Bitmap b = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-        Bitmap newB = Bitmap.createScaledBitmap(b, 120, 120, false);
-
-
-        flower1ImageView.setImageBitmap(flower1);
-        flower2ImageView.setImageBitmap(newB);
     }
 
     @Override
@@ -94,9 +95,33 @@ public class MainActivity extends AppCompatActivity {
         return bitMap;
     }
 
-    private static byte[] bitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-        return stream.toByteArray();
+    private void bitmapsSimilarity(Bitmap secondBitmap, Bitmap firstBitmap, double tolerance) {
+        Bitmap scaledSecondBitmap = Bitmap.createScaledBitmap(secondBitmap, 32, 32, true);
+        Bitmap scaledFirstBitmap = Bitmap.createScaledBitmap(firstBitmap, 32, 32, true);
+
+        int cumulatedColorDistance = 0;
+
+        for (int x = 0; x < scaledSecondBitmap.getWidth(); x++) {
+            for (int y = 0; y < scaledSecondBitmap.getHeight(); y++) {
+                int secondColor = scaledSecondBitmap.getPixel(x, y);
+                int firstColor = scaledFirstBitmap.getPixel(x, y);
+                int expectedRed = Color.red(secondColor);
+                int actualRed = Color.red(firstColor);
+                int expectedBlue = Color.blue(secondColor);
+                int actualBlue = Color.blue(firstColor);
+                int expectedGreen = Color.green(secondColor);
+                int actualGreen = Color.green(firstColor);
+                int colorDistance = Math.abs(expectedRed - actualRed) + Math.abs(expectedBlue - actualBlue) + Math.abs(expectedGreen - actualGreen);
+                cumulatedColorDistance += colorDistance;
+            }
+        }
+
+        double difference = 100.0 * cumulatedColorDistance / 3.0 / (32.0 * 32.0) / 255.0;
+
+        if (difference > tolerance) {
+            Log.w("UWAGA", "Pictures are different! (Difference " + difference + "% > " + tolerance + "%)");
+        } else {
+            Log.w("UWAGA", "Pictures are silimar! (Difference " + difference + "% < " + tolerance + "%)");
+        }
     }
 }
